@@ -1,0 +1,104 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Map</title>
+    <script type="text/javascript" src="jquery-1.5.1.js"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+   <script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+   
+<script type="text/javascript"> 
+
+function showLocation(position)
+{
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    var timestamp = position.timestamp;
+    var accuracy = position.coords.accuracy;
+    
+    var myLatLng = new google.maps.LatLng(lat, lng);
+	
+	map.setCenter(myLatLng);
+	
+	var marker = new google.maps.Marker({
+      position: myLatLng,
+      map: map,
+      title:"My location"
+ 	});
+ 	
+}
+
+function getLocation() {
+    navigator.geolocation.getCurrentPosition(showLocation,
+    function error(msg){
+                alert('Error retrieving location.');  
+      }, {maximumAge:600000, timeout:5000, enableHighAccuracy: true});
+}
+
+function drawMarkers() {
+	// draw the marker list
+}
+
+var map;
+var markers = [];	//list of locations from PHP
+
+function initialize() {
+	var myOptions = {
+		zoom : 8,
+		mapTypeId : google.maps.MapTypeId.ROADMAP,
+		center: new google.maps.LatLng(-34.397, 150.644)
+	};
+	mapDiv = $('#mapimage');
+	map = new google.maps.Map(mapDiv.get(0), myOptions);
+	
+	// get the location of the user
+	getLocation();
+	
+	drawMarkers();
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+$(document).ready(function() {
+
+});
+
+    // Enable pusher logging - don't include this in production
+    Pusher.log = function(message) {
+      if (window.console && window.console.log) window.console.log(message);
+    };
+
+    // Flash fallback logging - don't include this in production
+    WEB_SOCKET_DEBUG = true;
+
+    var pusher = new Pusher('c281696ff7ec61fd002c');
+    var channel = pusher.subscribe('test_channel');
+    var location;
+    channel.bind('my_event', function(data) {
+      
+      var location = eval('(' + data + ')');
+	var myLatLng = new google.maps.LatLng(location.lat, location.lng);
+      alert("Someone bought my coffee! ("+location.lat+", "+location.lng+")");
+		
+	var marker = new google.maps.Marker({
+      	position: myLatLng,
+      	map: map,
+      	title:"Coffee Location"
+    	});
+    });
+  
+</script>
+
+<style type="text/css">
+#mapimage {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+}
+</style>
+</head>
+<body>
+<div id="mapimage"></div>
+
+</body>
+</html>
